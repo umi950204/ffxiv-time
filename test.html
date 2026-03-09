@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>固定團排班調查表 (深夜班)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 950px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #2c3e50; }
+        
+        /* 輸入區樣式 */
+        .input-section { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        input[type="text"] { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 180px; }
+        select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
+        
+        /* 按鈕樣式 */
+        button { padding: 10px 15px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-submit { background-color: #3498db; }
+        .btn-submit:hover { background-color: #2980b9; }
+        .btn-load { background-color: #f39c12; }
+        .btn-load:hover { background-color: #d68910; }
+        .btn-clear { background-color: #e74c3c; }
+        .btn-clear:hover { background-color: #c0392b; }
+        
+        /* 網格系統 */
+        .grid-container { display: grid; grid-template-columns: 110px repeat(7, 1fr); gap: 2px; margin-bottom: 30px; }
+        .header-cell, .time-cell { padding: 8px 5px; text-align: center; background-color: #ecf0f1; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+        .cell { background-color: #fff; border: 1px solid #e0e0e0; cursor: pointer; transition: 0.2s; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 14px;}
+        
+        /* 填寫模式的選取顏色 */
+        .cell.selected { background-color: #f1c40f; border-color: #f39c12; }
+        
+        /* 結果模式的熱點圖顏色 (綠色系) */
+        .heat-1 { background-color: #d4efdf; }
+        .heat-2 { background-color: #a9dfbf; }
+        .heat-3 { background-color: #7dcea0; }
+        .heat-4 { background-color: #52be80; color: white; }
+        .heat-5 { background-color: #27ae60; color: white; font-weight: bold; }
+
+        /* 職業標籤顏色 */
+        .role-badge { padding: 3px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; margin-right: 5px; display: inline-block; width: 24px; text-align: center; }
+        .role-MT, .role-ST { background-color: #2980b9; } 
+        .role-H1, .role-H2 { background-color: #27ae60; } 
+        .role-D1, .role-D2, .role-D3, .role-D4 { background-color: #c0392b; } 
+        
+        .member-tag { display: inline-flex; align-items: center; background: #fff; border: 1px solid #ccc; padding: 3px 8px; border-radius: 20px; font-size: 14px; }
+
+        .result-section { margin-top: 40px; border-top: 2px dashed #bdc3c7; padding-top: 20px; }
+        #detail-box { margin-top: 15px; padding: 20px; background: #e8f8f5; border-radius: 5px; display: none; }
+        .detail-members { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚔️ 固定團排班調查表 (深夜班)</h1>
+    
+    <div class="input-section">
+        <input type="text" id="playerName" placeholder="請輸入您的遊戲 ID" required>
+        <select id="playerRole">
+            <option value="MT">MT (主坦)</option>
+            <option value="ST">ST (副坦)</option>
+            <option value="H1">H1 (純補)</option>
+            <option value="H2">H2 (盾補)</option>
+            <option value="D1">D1 (近戰)</option>
+            <option value="D2">D2 (近戰/特職)</option>
+            <option value="D3">D3 (遠敏)</option>
+            <option value="D4">D4 (法系)</option>
+        </select>
+        <button class="btn-submit" onclick="submitAvailability()">送出時間</button>
+        <button class="btn-load" onclick="loadUserData()">載入/修改</button>
+        <button class="btn-clear" onclick="clearUserData()">清除紀錄</button>
+    </div>
+
+    <h2>1. 點擊選擇您可以上線的時段</h2>
+    <div class="grid-container" id="inputGrid">
+        </div>
+
+    <div class="result-section">
+        <h2>2. 小隊彙總結果 (熱點圖)</h2>
+        <p style="text-align: center; color: #7f8c8d;">顏色越深代表該時段越多人能打。點擊格子可查看詳細職業配置。</p>
+        <div class="grid-container" id="resultGrid">
+            </div>
+        <div id="detail-box"></div>
+    </div>
+</div>
+
+<script>
+    // ⚠️ 請將下一行的網址替換成您剛剛在步驟三取得的「網頁應用程式網址」
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxw95rA4pvlYV1hZIdGA4VSxiRVTIeJDM6ZHfaAWp-dhPpVVdHIfpREV7RXPRgBiHHkRw/exec'; 
+
+    const days = ['一', '二', '三', '四', '五', '六', '日'];
+    const times = [
+        '23:00~23:30', '23:30~00:00', '00:00~00:30', '00:30~01:00', 
+        '01:00~01:30', '01:30~02:00', '02:00~02:30', '02:30~03:00'
+    ];
+    
+    let guildData = {}; 
+    let currentUserSelection = new Set();
+
+    // 網頁載入時，立刻從 Google Sheets 抓取最新資料
+    async function fetchGuildData() {
+        try {
+            const response = await fetch(API_URL);
+            guildData = await response.json();
+            updateResultGrid();
+        } catch (error) {
+            console.error("載入資料失敗", error);
+            alert("資料庫連線失敗，請稍後再試。");
+        }
+    }
+
+    // 建立網格 (與原版相同)
+    function createGrid(containerId, isInputMode) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        container.appendChild(createDiv('header-cell', ''));
+        days.forEach(day => container.appendChild(createDiv('header-cell', `星期${day}`)));
+
+        times.forEach(time => {
+            container.appendChild(createDiv('time-cell', time));
+            days.forEach(day => {
+                const cellId = `${day}-${time}`;
+                const cell = createDiv('cell', '');
+                cell.dataset.id = cellId;
+
+                if (isInputMode) {
+                    cell.addEventListener('click', () => toggleSelection(cell, cellId));
+                } else {
+                    cell.addEventListener('click', () => showDetails(cellId, `星期${day} ${time}`));
+                }
+                container.appendChild(cell);
+            });
+        });
+    }
+
+    function createDiv(className, text) {
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        return div;
+    }
+
+    function toggleSelection(cell, cellId) {
+        if (currentUserSelection.has(cellId)) {
+            currentUserSelection.delete(cellId);
+            cell.classList.remove('selected');
+        } else {
+            currentUserSelection.add(cellId);
+            cell.classList.add('selected');
+        }
+    }
+
+    function loadUserData() {
+        const name = document.getElementById('playerName').value.trim();
+        if (!name) { alert('請先輸入您的 ID，才能查詢紀錄！'); return; }
+
+        if (guildData[name]) {
+            document.getElementById('playerRole').value = guildData[name].role;
+            currentUserSelection = new Set(guildData[name].times);
+            const inputCells = document.querySelectorAll('#inputGrid .cell');
+            inputCells.forEach(cell => {
+                const cellId = cell.dataset.id;
+                if (currentUserSelection.has(cellId)) cell.classList.add('selected');
+                else cell.classList.remove('selected');
+            });
+            alert(`已載入 ${name} 的時間紀錄，請修改後點擊「送出時間」。`);
+        } else {
+            alert(`找不到 ${name} 的紀錄。`);
+        }
+    }
+
+    async function clearUserData() {
+        const name = document.getElementById('playerName').value.trim();
+        if (!name) { alert('請先輸入要清除的 ID！'); return; }
+
+        if (guildData[name]) {
+            if(confirm(`確定要完全清除 ${name} 的排班紀錄嗎？`)) {
+                // 先在本地端刪除並更新畫面 (讓使用者覺得速度很快)
+                delete guildData[name];
+                document.getElementById('playerName').value = '';
+                currentUserSelection.clear();
+                createGrid('inputGrid', true); 
+                updateResultGrid();
+
+                // 實際發送刪除請求給 Google Sheets
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'delete', name: name })
+                });
+                alert(`已成功清除 ${name} 的紀錄！`);
+            }
+        } else {
+            alert(`找不到 ${name} 的紀錄，無法清除。`);
+        }
+    }
+
+    async function submitAvailability() {
+        const name = document.getElementById('playerName').value.trim();
+        const role = document.getElementById('playerRole').value;
+
+        if (!name) { alert('請輸入您的 ID！'); return; }
+        if (currentUserSelection.size === 0) { alert('請至少選擇一個時段！'); return; }
+
+        // 按鈕改為載入中狀態，防止重複點擊
+        const btn = document.querySelector('.btn-submit');
+        const originalText = btn.textContent;
+        btn.textContent = '儲存中...';
+        btn.disabled = true;
+
+        const payload = {
+            action: 'save',
+            name: name,
+            role: role,
+            times: Array.from(currentUserSelection)
+        };
+
+        // 先在本地端更新畫面 (讓使用者覺得速度很快)
+        guildData[name] = { role: role, times: payload.times };
+        document.getElementById('playerName').value = '';
+        currentUserSelection.clear();
+        createGrid('inputGrid', true); 
+        updateResultGrid();
+
+        // 實際發送資料給 Google Sheets
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            alert(`已成功儲存 ${name} (${role}) 的時間！`);
+        } catch (error) {
+            alert('儲存失敗，請確認網路連線。');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function updateResultGrid() {
+        const timeStats = {};
+        let maxPeople = 0;
+
+        for (const [name, data] of Object.entries(guildData)) {
+            data.times.forEach(time => {
+                if (!timeStats[time]) timeStats[time] = 0;
+                timeStats[time]++;
+                if (timeStats[time] > maxPeople) maxPeople = timeStats[time];
+            });
+        }
+
+        const resultCells = document.querySelectorAll('#resultGrid .cell');
+        resultCells.forEach(cell => {
+            const cellId = cell.dataset.id;
+            const count = timeStats[cellId] || 0;
+            
+            cell.className = 'cell';
+            cell.textContent = count > 0 ? count : '';
+
+            if (count > 0) {
+                let heatLevel = Math.ceil((count / maxPeople) * 5);
+                cell.classList.add(`heat-${heatLevel}`);
+            }
+        });
+        document.getElementById('detail-box').style.display = 'none';
+    }
+
+    function showDetails(cellId, displayTitle) {
+        const detailBox = document.getElementById('detail-box');
+        const availableMembers = [];
+
+        for (const [name, data] of Object.entries(guildData)) {
+            if (data.times.includes(cellId)) {
+                availableMembers.push({ name: name, role: data.role });
+            }
+        }
+
+        if (availableMembers.length > 0) {
+            const roleOrder = { 'MT': 1, 'ST': 2, 'H1': 3, 'H2': 4, 'D1': 5, 'D2': 6, 'D3': 7, 'D4': 8 };
+            availableMembers.sort((a, b) => roleOrder[a.role] - roleOrder[b.role]);
+
+            const tagsHtml = availableMembers.map(m => 
+                `<div class="member-tag"><span class="role-badge role-${m.role}">${m.role}</span> ${m.name}</div>`
+            ).join('');
+
+            detailBox.style.display = 'block';
+            detailBox.innerHTML = `
+                <strong>📍 ${displayTitle} 可以上線的成員 (${availableMembers.length} 人):</strong>
+                <div class="detail-members">${tagsHtml}</div>
+            `;
+        } else {
+            detailBox.style.display = 'none';
+        }
+    }
+
+    // 初始化：先畫出空網格，然後去抓資料
+    createGrid('inputGrid', true);
+    createGrid('resultGrid', false);
+    fetchGuildData(); // 啟動時自動抓取 Google Sheets 資料
+
+</script>
+</body>
+</html>
