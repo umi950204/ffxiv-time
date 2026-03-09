@@ -3,54 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>固定團排班調查表 (深夜班)</title>
+    <title>固定團排班調查表 (艾歐澤亞風格)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 950px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #2c3e50; }
+        /* 艾歐澤亞暗黑風格基礎設定 */
+        body { 
+            font-family: 'Noto Sans TC', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #0f1012; 
+            background-image: radial-gradient(circle at center top, #1b1e24 0%, #0f1012 100%);
+            color: #e2e2e2; 
+            margin: 0; 
+            padding: 20px; 
+        }
         
-        /* 輸入區樣式 */
+        /* 半透明玻璃面板與金邊 */
+        .container { 
+            max-width: 950px; 
+            margin: 0 auto; 
+            background: rgba(25, 28, 33, 0.85); 
+            padding: 30px; 
+            border-radius: 8px; 
+            border: 1px solid #b89b5e; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8), inset 0 0 10px rgba(184, 155, 94, 0.1); 
+        }
+        
+        h1, h2 { 
+            text-align: center; 
+            color: #e5c158; 
+            text-shadow: 1px 1px 3px #000; 
+            letter-spacing: 1px; 
+        }
+        
+        /* 遊戲風輸入區樣式 */
         .input-section { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
-        /* 加入 font-size: 16px 防止 iOS 點擊時畫面亂跳縮放 */
-        input[type="text"], select { padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-weight: bold; }
+        input[type="text"], select { 
+            padding: 12px; 
+            background-color: #111; 
+            color: #e5c158; 
+            border: 1px solid #555; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            transition: 0.3s;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: #e5c158;
+            outline: none;
+            box-shadow: 0 0 8px rgba(229, 193, 88, 0.4);
+        }
         input[type="text"] { width: 180px; }
         
-        /* 按鈕樣式 */
-        button { padding: 12px 15px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 15px; }
-        .btn-submit { background-color: #3498db; }
-        .btn-submit:hover { background-color: #2980b9; }
-        .btn-load { background-color: #f39c12; }
-        .btn-load:hover { background-color: #d68910; }
-        .btn-clear { background-color: #e74c3c; }
-        .btn-clear:hover { background-color: #c0392b; }
+        /* 遊戲風立體按鈕 */
+        button { 
+            padding: 12px 15px; 
+            color: #fff; 
+            border: 1px solid #b89b5e; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: all 0.2s; 
+            font-size: 15px; 
+            text-shadow: 1px 1px 2px #000;
+        }
+        .btn-submit { background: linear-gradient(to bottom, #4a6b8c, #2b4057); }
+        .btn-submit:hover { background: linear-gradient(to bottom, #5c85ad, #385370); border-color: #fff; }
+        .btn-load { background: linear-gradient(to bottom, #8c6b4a, #57402b); }
+        .btn-load:hover { background: linear-gradient(to bottom, #ad855c, #705338); border-color: #fff; }
+        .btn-clear { background: linear-gradient(to bottom, #8c4a4a, #572b2b); }
+        .btn-clear:hover { background: linear-gradient(to bottom, #ad5c5c, #703838); border-color: #fff; }
         
         /* 網格系統與橫向滑動容器 */
         .grid-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 30px; border-radius: 5px; }
-        .grid-container { display: grid; grid-template-columns: 110px repeat(7, 1fr); gap: 2px; min-width: 800px; }
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: 110px repeat(7, 1fr); 
+            gap: 2px; 
+            min-width: 800px; 
+            background-color: #000; 
+            padding: 2px; 
+            border: 1px solid #444;
+        }
         
-        .header-cell, .time-cell { padding: 8px 5px; text-align: center; background-color: #ecf0f1; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; }
-        .cell { background-color: #fff; border: 1px solid #e0e0e0; cursor: pointer; transition: 0.2s; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px;}
+        /* 遊戲風表頭 */
+        .header-cell, .time-cell { 
+            padding: 8px 5px; 
+            text-align: center; 
+            background: linear-gradient(to bottom, #333, #1a1a1a); 
+            color: #d4b872; 
+            font-weight: bold; 
+            font-size: 13px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-shadow: 1px 1px 1px #000;
+        }
+        /* 遊戲風未選取格子 */
+        .cell { 
+            background-color: #222; 
+            border: 1px solid #333; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 14px; 
+            color: #fff;
+        }
+        .cell:hover { background-color: #333; }
         
-        /* 填寫模式的選取顏色 */
-        .cell.selected { background-color: #f1c40f; border-color: #f39c12; }
+        /* 填寫模式的選取顏色 (耀眼金) */
+        .cell.selected { 
+            background-color: #d4af37; 
+            border-color: #f1c40f; 
+            color: #000; 
+            font-weight: bold; 
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.6); 
+        }
         
-        /* 結果模式的熱點圖顏色 (綠色系) */
-        .heat-1 { background-color: #d4efdf; }
-        .heat-2 { background-color: #a9dfbf; }
-        .heat-3 { background-color: #7dcea0; }
-        .heat-4 { background-color: #52be80; color: white; }
-        .heat-5 { background-color: #27ae60; color: white; font-weight: bold; }
+        /* 結果模式的熱點圖顏色 (以太水晶青藍色漸層) */
+        .heat-1 { background-color: #1a3644; }
+        .heat-2 { background-color: #205069; }
+        .heat-3 { background-color: #277093; }
+        .heat-4 { background-color: #2fa1d6; color: #fff; text-shadow: 1px 1px 2px #000; }
+        .heat-5 { background-color: #00e5ff; color: #000; font-weight: bold; box-shadow: 0 0 10px rgba(0,229,255,0.8); text-shadow: none; z-index: 1;}
 
-        /* 職業標籤顏色 */
-        .role-badge { padding: 3px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; margin-right: 5px; display: inline-block; width: 24px; text-align: center; }
-        .role-MT, .role-ST { background-color: #2980b9; } 
-        .role-H1, .role-H2 { background-color: #27ae60; } 
-        .role-D1, .role-D2, .role-D3, .role-D4 { background-color: #c0392b; } 
+        /* FFXIV 原生職業顏色標籤 */
+        .role-badge { padding: 3px 6px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; margin-right: 5px; display: inline-block; width: 24px; text-align: center; text-shadow: 1px 1px 1px #000; border: 1px solid rgba(255,255,255,0.2);}
+        .role-MT, .role-ST { background-color: #2150A6; } /* 坦克 深藍 */
+        .role-H1, .role-H2 { background-color: #3E6D34; } /* 治療 森綠 */
+        .role-D1, .role-D2, .role-D3, .role-D4 { background-color: #792622; } /* 輸出 酒紅 */
         
-        .member-tag { display: inline-flex; align-items: center; background: #fff; border: 1px solid #ccc; padding: 4px 10px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .member-tag { display: inline-flex; align-items: center; background: #2a2a2a; border: 1px solid #555; padding: 4px 10px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); color: #ddd;}
 
-        .result-section { margin-top: 40px; border-top: 2px dashed #bdc3c7; padding-top: 20px; }
-        #detail-box { margin-top: 15px; padding: 20px; background: #e8f8f5; border-radius: 5px; display: none; }
+        .result-section { margin-top: 40px; border-top: 2px dashed #555; padding-top: 20px; }
+        #detail-box { margin-top: 15px; padding: 20px; background: rgba(0, 0, 0, 0.6); border: 1px solid #b89b5e; border-radius: 5px; display: none; color: #e2e2e2;}
         .detail-members { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 
         /* ========= 手機版專屬優化 (RWD) ========= */
@@ -59,12 +145,8 @@
             .container { padding: 15px; }
             h1 { font-size: 24px; }
             h2 { font-size: 18px; }
-            
-            /* 輸入區垂直排列 */
             .input-section { flex-direction: column; align-items: stretch; gap: 8px; }
             input[type="text"], select, button { width: 100%; box-sizing: border-box; }
-            
-            /* 讓提示文字適應手機 */
             p { font-size: 14px; }
         }
     </style>
@@ -72,7 +154,7 @@
 <body>
 
 <div class="container">
-    <h1>⚔️ 固定團排班調查表 (深夜班)</h1>
+    <h1>⚔️ 固定團排班調查表</h1>
     
     <div class="input-section">
         <input type="text" id="playerName" placeholder="請輸入您的遊戲 ID" required>
@@ -87,7 +169,7 @@
             <option value="D4">D4 (法系)</option>
         </select>
         <button class="btn-submit" onclick="submitAvailability()">送出時間</button>
-        <button class="btn-load" onclick="loadUserData()">載入/修改</button>
+        <button class="btn-load" onclick="loadUserData()">載入 / 修改</button>
         <button class="btn-clear" onclick="clearUserData()">清除紀錄</button>
     </div>
 
@@ -98,7 +180,7 @@
 
     <div class="result-section">
         <h2>2. 小隊彙總結果</h2>
-        <p style="text-align: center; color: #7f8c8d;">顏色越深代表該時段越多人能打。點擊格子可查看詳細配置。</p>
+        <p style="text-align: center; color: #a9a9a9;">顏色越亮代表該時段越多人能打。點擊格子可查看詳細配置。</p>
         <div class="grid-wrapper">
             <div class="grid-container" id="resultGrid"></div>
         </div>
@@ -107,7 +189,7 @@
 </div>
 
 <script>
-    // ⚠️ 記得將這裡替換成您自己的 Google Apps Script 網址！
+    // ⚠️ 請務必記得把這裡替換成您自己的 Google Apps Script 網址喔！
     const API_URL = 'https://script.google.com/macros/s/AKfycbxw95rA4pvlYV1hZIdGA4VSxiRVTIeJDM6ZHfaAWp-dhPpVVdHIfpREV7RXPRgBiHHkRw/exec'; 
 
     const days = ['一', '二', '三', '四', '五', '六', '日'];
@@ -126,7 +208,6 @@
             updateResultGrid();
         } catch (error) {
             console.error("載入資料失敗", error);
-            alert("資料庫連線失敗，請確認 API 網址是否正確或稍後再試。");
         }
     }
 
@@ -221,7 +302,7 @@
 
         const btn = document.querySelector('.btn-submit');
         const originalText = btn.textContent;
-        btn.textContent = '儲存中...';
+        btn.textContent = '詠唱中...';
         btn.disabled = true;
 
         const payload = {
@@ -299,7 +380,7 @@
 
             detailBox.style.display = 'block';
             detailBox.innerHTML = `
-                <strong>📍 ${displayTitle} 可以上線的成員 (${availableMembers.length} 人):</strong>
+                <strong style="color:#e5c158;">📍 ${displayTitle} 可以上線的成員 (${availableMembers.length} 人):</strong>
                 <div class="detail-members">${tagsHtml}</div>
             `;
         } else {
@@ -314,4 +395,3 @@
 </script>
 </body>
 </html>
-
