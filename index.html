@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>固定團排班調查表 (艾歐澤亞風格)</title>
+    <title>水波蛋高難時間安排表</title>
     <style>
         /* 艾歐澤亞暗黑風格基礎設定 */
         body { 
@@ -15,9 +15,8 @@
             padding: 20px; 
         }
         
-        /* 半透明玻璃面板與金邊 */
         .container { 
-            max-width: 950px; 
+            max-width: 1050px; /* 稍微加寬以容納備註欄 */
             margin: 0 auto; 
             background: rgba(25, 28, 33, 0.85); 
             padding: 30px; 
@@ -34,7 +33,7 @@
         }
         
         /* 遊戲風輸入區樣式 */
-        .input-section { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        .input-section { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; align-items: center;}
         input[type="text"], select { 
             padding: 12px; 
             background-color: #111; 
@@ -50,7 +49,8 @@
             outline: none;
             box-shadow: 0 0 8px rgba(229, 193, 88, 0.4);
         }
-        input[type="text"] { width: 180px; }
+        #playerName { width: 150px; }
+        #playerNote { width: 220px; } /* 備註欄位較寬 */
         
         /* 遊戲風立體按鈕 */
         button { 
@@ -129,35 +129,35 @@
 
         /* FFXIV 原生職業顏色標籤 */
         .role-badge { padding: 3px 6px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; margin-right: 5px; display: inline-block; width: 24px; text-align: center; text-shadow: 1px 1px 1px #000; border: 1px solid rgba(255,255,255,0.2);}
-        .role-MT, .role-ST { background-color: #2150A6; } /* 坦克 深藍 */
-        .role-H1, .role-H2 { background-color: #3E6D34; } /* 治療 森綠 */
-        .role-D1, .role-D2, .role-D3, .role-D4 { background-color: #792622; } /* 輸出 酒紅 */
+        .role-MT, .role-ST { background-color: #2150A6; } 
+        .role-H1, .role-H2 { background-color: #3E6D34; } 
+        .role-D1, .role-D2, .role-D3, .role-D4 { background-color: #792622; } 
         
-        .member-tag { display: inline-flex; align-items: center; background: #2a2a2a; border: 1px solid #555; padding: 4px 10px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); color: #ddd;}
+        .member-tag { display: inline-flex; flex-direction: column; align-items: flex-start; background: #2a2a2a; border: 1px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); color: #ddd; min-width: 120px;}
+        .member-tag-header { display: flex; align-items: center; width: 100%; margin-bottom: 4px; }
+        .member-tag-note { font-size: 12px; color: #a0a0a0; padding-left: 2px; word-break: break-all; }
 
         .result-section { margin-top: 40px; border-top: 2px dashed #555; padding-top: 20px; }
         #detail-box { margin-top: 15px; padding: 20px; background: rgba(0, 0, 0, 0.6); border: 1px solid #b89b5e; border-radius: 5px; display: none; color: #e2e2e2;}
         .detail-members { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 
-        /* ========= 手機版專屬優化 (RWD) ========= */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .container { padding: 15px; }
             h1 { font-size: 24px; }
             h2 { font-size: 18px; }
             .input-section { flex-direction: column; align-items: stretch; gap: 8px; }
-            input[type="text"], select, button { width: 100%; box-sizing: border-box; }
-            p { font-size: 14px; }
+            input[type="text"], select, button { width: 100% !important; box-sizing: border-box; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>⚔️ 固定團排班調查表</h1>
+    <h1>⚔️ 水波蛋高難時間安排表</h1>
     
     <div class="input-section">
-        <input type="text" id="playerName" placeholder="請輸入您的遊戲 ID" required>
+        <input type="text" id="playerName" placeholder="遊戲 ID" required>
         <select id="playerRole">
             <option value="MT">MT (主坦)</option>
             <option value="ST">ST (副坦)</option>
@@ -168,6 +168,8 @@
             <option value="D3">D3 (遠敏)</option>
             <option value="D4">D4 (法系)</option>
         </select>
+        <input type="text" id="playerNote" placeholder="備註 (如: 攻略打法/進度)">
+        
         <button class="btn-submit" onclick="submitAvailability()">送出時間</button>
         <button class="btn-load" onclick="loadUserData()">載入 / 修改</button>
         <button class="btn-clear" onclick="clearUserData()">清除紀錄</button>
@@ -180,7 +182,7 @@
 
     <div class="result-section">
         <h2>2. 小隊彙總結果</h2>
-        <p style="text-align: center; color: #a9a9a9;">顏色越亮代表該時段越多人能打。點擊格子可查看詳細配置。</p>
+        <p style="text-align: center; color: #a9a9a9;">顏色越亮代表該時段越多人能打。點擊格子可查看詳細配置與備註。</p>
         <div class="grid-wrapper">
             <div class="grid-container" id="resultGrid"></div>
         </div>
@@ -189,13 +191,15 @@
 </div>
 
 <script>
-    // ⚠️ 請務必記得把這裡替換成您自己的 Google Apps Script 網址喔！
+    // ⚠️ 請務必記得把這裡替換成您自己的 Google Apps Script 網址！
     const API_URL = 'https://script.google.com/macros/s/AKfycbxw95rA4pvlYV1hZIdGA4VSxiRVTIeJDM6ZHfaAWp-dhPpVVdHIfpREV7RXPRgBiHHkRw/exec'; 
 
     const days = ['一', '二', '三', '四', '五', '六', '日'];
+    // 更新為 17:00 ~ 02:00 (每小時一格)
     const times = [
-        '23:00~23:30', '23:30~00:00', '00:00~00:30', '00:30~01:00', 
-        '01:00~01:30', '01:30~02:00', '02:00~02:30', '02:30~03:00'
+        '17:00~18:00', '18:00~19:00', '19:00~20:00', 
+        '20:00~21:00', '21:00~22:00', '22:00~23:00', 
+        '23:00~00:00', '00:00~01:00', '01:00~02:00'
     ];
     
     let guildData = {}; 
@@ -257,6 +261,9 @@
 
         if (guildData[name]) {
             document.getElementById('playerRole').value = guildData[name].role;
+            // 載入備註
+            document.getElementById('playerNote').value = guildData[name].note || '';
+            
             currentUserSelection = new Set(guildData[name].times);
             const inputCells = document.querySelectorAll('#inputGrid .cell');
             inputCells.forEach(cell => {
@@ -278,6 +285,7 @@
             if(confirm(`確定要完全清除 ${name} 的排班紀錄嗎？`)) {
                 delete guildData[name];
                 document.getElementById('playerName').value = '';
+                document.getElementById('playerNote').value = '';
                 currentUserSelection.clear();
                 createGrid('inputGrid', true); 
                 updateResultGrid();
@@ -296,6 +304,7 @@
     async function submitAvailability() {
         const name = document.getElementById('playerName').value.trim();
         const role = document.getElementById('playerRole').value;
+        const note = document.getElementById('playerNote').value.trim(); // 取得備註
 
         if (!name) { alert('請輸入您的 ID！'); return; }
         if (currentUserSelection.size === 0) { alert('請至少選擇一個時段！'); return; }
@@ -309,11 +318,14 @@
             action: 'save',
             name: name,
             role: role,
+            note: note, // 將備註加入傳送資料
             times: Array.from(currentUserSelection)
         };
 
-        guildData[name] = { role: role, times: payload.times };
+        // 更新本地資料
+        guildData[name] = { role: role, note: note, times: payload.times };
         document.getElementById('playerName').value = '';
+        document.getElementById('playerNote').value = '';
         currentUserSelection.clear();
         createGrid('inputGrid', true); 
         updateResultGrid();
@@ -366,7 +378,8 @@
 
         for (const [name, data] of Object.entries(guildData)) {
             if (data.times.includes(cellId)) {
-                availableMembers.push({ name: name, role: data.role });
+                // 將備註也加進去
+                availableMembers.push({ name: name, role: data.role, note: data.note });
             }
         }
 
@@ -374,9 +387,17 @@
             const roleOrder = { 'MT': 1, 'ST': 2, 'H1': 3, 'H2': 4, 'D1': 5, 'D2': 6, 'D3': 7, 'D4': 8 };
             availableMembers.sort((a, b) => roleOrder[a.role] - roleOrder[b.role]);
 
-            const tagsHtml = availableMembers.map(m => 
-                `<div class="member-tag"><span class="role-badge role-${m.role}">${m.role}</span> ${m.name}</div>`
-            ).join('');
+            // 調整名牌顯示方式，加入備註資訊
+            const tagsHtml = availableMembers.map(m => {
+                let noteHtml = m.note ? `<div class="member-tag-note">📝 ${m.note}</div>` : '';
+                return `
+                <div class="member-tag">
+                    <div class="member-tag-header">
+                        <span class="role-badge role-${m.role}">${m.role}</span> ${m.name}
+                    </div>
+                    ${noteHtml}
+                </div>`;
+            }).join('');
 
             detailBox.style.display = 'block';
             detailBox.innerHTML = `
